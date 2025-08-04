@@ -1,0 +1,32 @@
+{
+  "name": "ccr-monitor",
+  "version": "1.0.0",
+  "description": "Standalone terminal-based monitoring tool for Claude Code Router",
+  "main": "dist/index.js",
+  "bin": {
+    "ccr-monitor": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "dev": "ts-node src/index.ts"
+  },
+  "keywords": [
+    "claude",
+    "code",
+    "router",
+    "monitor",
+    "llm",
+    "usage",
+    "tracking"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "typescript": "^5.8.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "ts-node": "^10.9.2"
+  }
+}
