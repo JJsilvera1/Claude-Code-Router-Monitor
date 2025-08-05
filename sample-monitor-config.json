@@ -1,0 +1,209 @@
+{
+  "Pricing": {
+    "openrouter,anthropic/claude-sonnet-4": {
+      "inputCostPerMToken": 3.0,
+      "outputCostPerMToken": 15.0,
+      "contextWindow": 200000
+    },
+    "openrouter,anthropic/claude-3.7-sonnet": {
+      "inputCostPerMToken": 3.0,
+      "outputCostPerMToken": 15.0,
+      "contextWindow": 200000
+    },
+    "openrouter,anthropic/claude-opus-4": {
+      "inputCostPerMToken": 15.0,
+      "outputCostPerMToken": 75.0,
+      "contextWindow": 200000
+    },
+    "openrouter,anthropic/claude-3.5-haiku": {
+      "inputCostPerMToken": 0.8,
+      "outputCostPerMToken": 4.0,
+      "contextWindow": 200000
+    },
+    "openrouter,anthropic/claude-3.5-sonnet": {
+      "inputCostPerMToken": 3.0,
+      "outputCostPerMToken": 15.0,
+      "contextWindow": 200000
+    },
+    "openrouter,openrouter/horizon-beta": {
+      "inputCostPerMToken": 0.0,
+      "outputCostPerMToken": 0.0,
+      "contextWindow": 256000
+    },
+    "openrouter,deepseek/deepseek-chat-v3-0324:free": {
+      "inputCostPerMToken": 0.0,
+      "outputCostPerMToken": 0.0,
+      "contextWindow": 163840
+    },
+    "openrouter,deepseek/deepseek-chat-v3-0324": {
+      "inputCostPerMToken": 0.25,
+      "outputCostPerMToken": 0.85,
+      "contextWindow": 163840
+    },
+    "openrouter,deepseek/deepseek-r1-0528:free": {
+      "inputCostPerMToken": 0.0,
+      "outputCostPerMToken": 0.0,
+      "contextWindow": 163840
+    },
+    "openrouter,deepseek/deepseek-r1:free": {
+      "inputCostPerMToken": 0.0,
+      "outputCostPerMToken": 0.0,
+      "contextWindow": 163840
+    },
+    "openrouter,deepseek/deepseek-r1-0528": {
+      "inputCostPerMToken": 0.272,
+      "outputCostPerMToken": 0.272,
+      "contextWindow": 163840
+    },
+    "openrouter,deepseek/deepseek-chat": {
+      "inputCostPerMToken": 0.18,
+      "outputCostPerMToken": 0.72,
+      "contextWindow": 163840
+    },
+    "openrouter,tngtech/deepseek-r1t2-chimera:free": {
+      "inputCostPerMToken": 0.0,
+      "outputCostPerMToken": 0.0,
+      "contextWindow": 163840
+    },
+    "openrouter,meta-llama/llama-4-maverick": {
+      "inputCostPerMToken": 0.15,
+      "outputCostPerMToken": 0.6,
+      "contextWindow": 1048576
+    },
+    "openrouter,meta-llama/llama-3.3-70b-instruct": {
+      "inputCostPerMToken": 0.038,
+      "outputCostPerMToken": 0.12,
+      "contextWindow": 131072
+    },
+    "openrouter,mistralai/mistral-nemo": {
+      "inputCostPerMToken": 0.008,
+      "outputCostPerMToken": 0.05,
+      "contextWindow": 32000
+    },
+    "openrouter,mistralai/mistral-small-24b-instruct-2501": {
+      "inputCostPerMToken": 0.02,
+      "outputCostPerMToken": 0.08,
+      "contextWindow": 32768
+    },
+    "openrouter,mistralai/mistral-small-3.2-24b-instruct": {
+      "inputCostPerMToken": 0.02,
+      "outputCostPerMToken": 0.08,
+      "contextWindow": 131072
+    },
+    "openrouter,moonshotai/kimi-k2": {
+      "inputCostPerMToken": 0.14,
+      "outputCostPerMToken": 2.49,
+      "contextWindow": 63000
+    },
+    "openrouter,moonshotai/kimi-k2:free": {
+      "inputCostPerMToken": 0.0,
+      "outputCostPerMToken": 0.0,
+      "contextWindow": 32768
+    },
+    "openrouter,x-ai/grok-4": {
+      "inputCostPerMToken": 3.0,
+      "outputCostPerMToken": 15.0,
+      "contextWindow": 256000
+    },
+    "openrouter,z-ai/glm-4.5": {
+      "inputCostPerMToken": 0.59,
+      "outputCostPerMToken": 2.10,
+      "contextWindow": 131072
+    },
+    "openrouter,z-ai/glm-4.5-air:free": {
+      "inputCostPerMToken": 0.0,
+      "outputCostPerMToken": 0.0,
+      "contextWindow": 131072
+    },
+    "openrouter,qwen/qwen3-coder:free": {
+      "inputCostPerMToken": 0.0,
+      "outputCostPerMToken": 0.0,
+      "contextWindow": 262144
+    },
+    "openrouter,qwen/qwen3-coder": {
+      "inputCostPerMToken": 0.3,
+      "outputCostPerMToken": 1.2,
+      "contextWindow": 262144
+    },
+    "openrouter,qwen/qwen3-30b-a3b": {
+      "inputCostPerMToken": 0.02,
+      "outputCostPerMToken": 0.08,
+      "contextWindow": 40960
+    },
+    "openrouter,qwen/qwen3-235b-a22b-2507": {
+      "inputCostPerMToken": 0.078,
+      "outputCostPerMToken": 0.312,
+      "contextWindow": 262144
+    },
+    "openrouter,qwen/qwen3-32b": {
+      "inputCostPerMToken": 0.018,
+      "outputCostPerMToken": 0.072,
+      "contextWindow": 40960
+    },
+    "google/gemini-2.5-flash": {
+      "inputCostPerMToken": 0.3,
+      "outputCostPerMToken": 2.5,
+      "contextWindow": 1048576
+    },
+    "google/gemini-2.0-flash-001": {
+      "inputCostPerMToken": 0.1,
+      "outputCostPerMToken": 0.4,
+      "contextWindow": 1048576
+    },
+    "google/gemini-2.5-pro": {
+      "inputCostPerMToken": 1.25,
+      "outputCostPerMToken": 10.0,
+      "contextWindow": 1048576
+    },
+    "google/gemini-flash-1.5": {
+      "inputCostPerMToken": 0.075,
+      "outputCostPerMToken": 0.3,
+      "contextWindow": 1000000
+    },
+    "google/gemini-2.5-flash-lite-preview-06-17": {
+      "inputCostPerMToken": 0.1,
+      "outputCostPerMToken": 0.4,
+      "contextWindow": 1048576
+    },
+    "google/gemini-flash-1.5-8b": {
+      "inputCostPerMToken": 0.038,
+      "outputCostPerMToken": 0.15,
+      "contextWindow": 1000000
+    },
+    "google/gemini-2.5-flash-lite": {
+      "inputCostPerMToken": 0.1,
+      "outputCostPerMToken": 0.4,
+      "contextWindow": 1048576
+    },
+    "google/gemini-2.0-flash-lite-001": {
+      "inputCostPerMToken": 0.075,
+      "outputCostPerMToken": 0.3,
+      "contextWindow": 1048576
+    },
+    "openai/gpt-4o-mini": {
+      "inputCostPerMToken": 0.15,
+      "outputCostPerMToken": 0.6,
+      "contextWindow": 128000
+    },
+    "openai/gpt-4.1-mini": {
+      "inputCostPerMToken": 0.4,
+      "outputCostPerMToken": 1.6,
+      "contextWindow": 1047576
+    },
+    "openai/gpt-4.1": {
+      "inputCostPerMToken": 2.0,
+      "outputCostPerMToken": 8.0,
+      "contextWindow": 1047576
+    },
+    "openai/gpt-4.1-nano": {
+      "inputCostPerMToken": 0.1,
+      "outputCostPerMToken": 0.4,
+      "contextWindow": 1047576
+    }
+  },
+  "Settings": {
+    "defaultRefreshInterval": 10,
+    "maxRecentCalls": 10,
+    "fallbackCostPerMToken": 0.01
+  }
+}
