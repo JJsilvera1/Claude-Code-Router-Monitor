@@ -1,19 +1,14 @@
 import { getUsageData, readConfigFile } from "./log-reader";
-import { UsageData } from "./types";
+import { UsageData, ModelPricing } from "./types";
 import { 
   clearScreen, 
   formatTokenCount, 
   formatCost, 
   formatTimeAgo,
   displayHeader,
-  displayFooter
+  displayFooter,
+  displayLastApiCall
 } from "./formatter";
-
-interface ModelPricing {
-  inputCostPerMToken: number;
-  outputCostPerMToken: number;
-  contextWindow: number;
-}
 
 async function calculateCost(tokenCount: number, model: string, provider: string): Promise<number> {
   try {
@@ -151,11 +146,82 @@ async function displayRecentCalls(data: UsageData[]) {
   console.log();
 }
 
+function getContextWindowInfo(model: string, provider: string): number {
+  try {
+    const config = readConfigFile();
+    const modelKey = `${provider},${model}`;
+    
+    if (config && config.Pricing && config.Pricing[modelKey]) {
+      return config.Pricing[modelKey].contextWindow;
+    }
+  } catch (error) {
+    console.error("Error reading config for context window:", error);
+  }
+  
+  // Default context window sizes
+  if (model.includes("qwen3-coder")) {
+    return 32768;
+  } else if (model.includes("glm-4.5")) {
+    return 128000;
+  } else if (model.includes("gemini-2.5-pro")) {
+    return 2097152;
+  } else if (model.includes("gemini-2.5-flash")) {
+    return 1048576;
+  } else if (model.includes("claude-3-5-haiku")) {
+    return 200000;
+  } else if (model.includes("claude-3-5-sonnet")) {
+    return 200000;
+  } else if (model.includes("claude-3-opus")) {
+    return 200000;
+  }
+  
+  // Default fallback
+  return 32768;
+}
+
+function findMostRecentValidCall(data: UsageData[]): UsageData | null {
+  // Look for the most recent entry with a valid model name
+  for (let i = data.length - 1; i >= 0; i--) {
+    const call = data[i];
+    if (call.model && call.model !== "unknown" && call.model.trim() !== "") {
+      return call;
+    }
+  }
+  
+  // If no valid model found, return the most recent entry if it exists
+  if (data.length > 0) {
+    return data[data.length - 1];
+  }
+  
+  return null;
+}
+
+function renderLastApiCallSection(data: UsageData[]) {
+  if (data.length === 0) {
+    return;
+  }
+  
+  // Find the most recent call with a valid model name
+  const recentCall = findMostRecentValidCall(data);
+  if (!recentCall) {
+    return;
+  }
+  
+  const contextWindow = getContextWindowInfo(recentCall.model, recentCall.provider);
+  
+  displayLastApiCall(recentCall.tokenCount, contextWindow, recentCall.model, recentCall.provider);
+}
+
 let lastData: UsageData[] = [];
 
 export async function updateDisplay() {
   try {
-    const data = getUsageData();
+    const rawData = getUsageData();
+    if (!rawData || rawData.length === 0) {
+      // If we get no data, stick with the last known good data
+      return;
+    }
+    const data = Array.from(new Set(rawData.map(e => JSON.stringify(e)))).map(e => JSON.parse(e));
     
     // Check if data has changed
     if (JSON.stringify(data) !== JSON.stringify(lastData)) {
@@ -164,10 +230,11 @@ export async function updateDisplay() {
       
       if (data.length > 0) {
         const aggregated = await aggregateUsageData(data);
-        displaySummary(data, aggregated);
-        displayByModel(aggregated);
-        displayByProvider(aggregated);
         await displayRecentCalls(data);
+        displayByProvider(aggregated);
+        displayByModel(aggregated);
+        displaySummary(data, aggregated);
+        renderLastApiCallSection(data);
       } else {
         console.log("No usage data available yet. Waiting for API calls...");
         console.log();
@@ -183,7 +250,7 @@ export async function updateDisplay() {
   }
 }
 
-export async function startMonitoring() {
+export async function startMonitoring(shutdownCallback?: () => void) {
   console.log("Starting Claude Code Router monitoring service...");
   
   // Clear screen and display initial data
@@ -203,6 +270,9 @@ export async function startMonitoring() {
   // Handle Ctrl+C
   process.on('SIGINT', () => {
     console.log('\n\nMonitoring service stopped.');
+    if (shutdownCallback) {
+      shutdownCallback();
+    }
     process.exit(0);
   });
 }

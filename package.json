@@ -4,12 +4,15 @@
   "description": "Standalone terminal-based monitoring tool for Claude Code Router",
   "main": "dist/index.js",
   "bin": {
-    "ccr-monitor": "dist/index.js"
+    "ccr-monitor": "dist/index.js",
+    "ccr-log-parser": "dist/log-parser.js",
+    "ccr-start": "dist/starter.js"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "ts-node src/index.ts"
+    "dev": "ts-node src/index.ts",
+    "parse-logs": "ts-node src/log-parser.ts"
   },
   "keywords": [
     "claude",

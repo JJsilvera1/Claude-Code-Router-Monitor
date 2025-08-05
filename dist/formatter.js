@@ -2,10 +2,12 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.clearScreen = clearScreen;
 exports.formatTokenCount = formatTokenCount;
+exports.formatRawTokenCount = formatRawTokenCount;
 exports.formatCost = formatCost;
 exports.formatTimeAgo = formatTimeAgo;
 exports.displayHeader = displayHeader;
 exports.displayFooter = displayFooter;
+exports.displayLastApiCall = displayLastApiCall;
 // ANSI color codes for terminal formatting
 const colors = {
     reset: "\x1b[0m",
@@ -30,6 +32,10 @@ function formatTokenCount(count) {
         return `${(count / 1000).toFixed(1)}K`;
     }
     return count.toString();
+}
+function formatRawTokenCount(count) {
+    // Return the raw number without formatting for clarity in context windows
+    return count.toLocaleString();
 }
 function formatCost(cost) {
     return `$${cost.toFixed(4)}`;
@@ -59,4 +65,30 @@ function displayHeader() {
 function displayFooter() {
     console.log(colors.dim + "Press Ctrl+C to exit" + colors.reset);
     console.log(colors.dim + "Data updates every 10 seconds" + colors.reset);
+}
+function displayLastApiCall(currentTokens, contextWindow, modelName, providerName) {
+    const percentage = (currentTokens / contextWindow) * 100;
+    const barLength = 40;
+    let filledLength = Math.round((currentTokens / contextWindow) * barLength);
+    let barColor = colors.green;
+    let percentageText = `${percentage.toFixed(1)}%`;
+    if (percentage > 100) {
+        barColor = colors.red;
+        filledLength = barLength; // Fill the bar completely
+        percentageText = `${colors.red}LIMIT EXCEEDED${colors.reset}`;
+    }
+    else if (percentage > 80) {
+        barColor = colors.red;
+    }
+    else if (percentage > 60) {
+        barColor = colors.yellow;
+    }
+    filledLength = Math.min(barLength, filledLength); // Cap at barLength
+    const emptyLength = barLength - filledLength;
+    const bar = barColor + "▒".repeat(filledLength) + colors.dim + "░".repeat(emptyLength) + colors.reset;
+    console.log(`${colors.bright}Last API Call Tokens:${colors.reset}`);
+    console.log(`Model: ${colors.green}${modelName}${colors.reset} (${colors.blue}${providerName}${colors.reset})`);
+    console.log(`Tokens: ${colors.yellow}${formatTokenCount(currentTokens)}${colors.reset} of ${colors.cyan}${formatRawTokenCount(contextWindow)}${colors.reset}`);
+    console.log(`[${bar}] ${percentageText}`);
+    console.log();
 }
