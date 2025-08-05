@@ -28,7 +28,7 @@ npm install -g .
 
 ## Prerequisites
 
-1. Install [claude-code-router](https://github.com/your-repo/claude-code-router):
+1. Install [claude-code-router](https://github.com/musistudio/claude-code-router):
    ```bash
    npm install -g @musistudio/claude-code-router
    ```
@@ -41,8 +41,6 @@ npm install -g .
    ```
 
 3. Create `~/.claude-code-router/monitor-config.json` with your pricing:
-   - Copy our sample configuration: `sample-monitor-config.json`
-   - Or create a minimal config:
    ```json
    {
      "Pricing": {
