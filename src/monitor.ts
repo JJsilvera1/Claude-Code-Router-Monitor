@@ -9,6 +9,9 @@ import {
   displayFooter,
   displayLastApiCall
 } from "./formatter";
+import fs from "fs";
+import path from "path";
+import { spawn } from "child_process";
 
 async function calculateCost(tokenCount: number, model: string, provider: string): Promise<number> {
   try {
@@ -160,9 +163,9 @@ function getContextWindowInfo(model: string, provider: string): number {
   
   // Default context window sizes
   if (model.includes("qwen3-coder")) {
-    return 32768;
+    return 262144;
   } else if (model.includes("glm-4.5")) {
-    return 128000;
+    return 131072;
   } else if (model.includes("gemini-2.5-pro")) {
     return 2097152;
   } else if (model.includes("gemini-2.5-flash")) {
@@ -207,24 +210,91 @@ function renderLastApiCallSection(data: UsageData[]) {
     return;
   }
   
+  // Find the maximum token count among the last two calls with the same model and provider
+  const callsWithSameModel = data
+    .filter(call => call.model === recentCall.model && call.provider === recentCall.provider)
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+  
+  // Get the last two calls (or all if less than two)
+  const lastTwoCalls = callsWithSameModel.slice(0, 2);
+  
+  const maxTokenCount = lastTwoCalls.length > 0
+    ? Math.max(...lastTwoCalls.map(call => call.tokenCount))
+    : recentCall.tokenCount;
+  
   const contextWindow = getContextWindowInfo(recentCall.model, recentCall.provider);
   
-  displayLastApiCall(recentCall.tokenCount, contextWindow, recentCall.model, recentCall.provider);
+  displayLastApiCall(maxTokenCount, contextWindow, recentCall.model, recentCall.provider);
+}
+
+// Function to check if log parser is running by looking for recent updates
+function checkLogParserStatus(): { isRunning: boolean; lastUpdate: string | null } {
+  try {
+    const data = getUsageData();
+    if (data && data.length > 0) {
+      const latestEntry = data[data.length - 1];
+      const lastUpdate = latestEntry.timestamp;
+      
+      // Check if the last update was within the last 2 minutes
+      const lastUpdateTime = new Date(lastUpdate).getTime();
+      const currentTime = new Date().getTime();
+      const timeDiff = currentTime - lastUpdateTime;
+      
+      // If less than 2 minutes old, consider it running
+      if (timeDiff < 120000) {
+        return { isRunning: true, lastUpdate };
+      } else {
+        return { isRunning: false, lastUpdate };
+      }
+    }
+  } catch (error) {
+    console.error("Error checking log parser status:", error);
+  }
+  
+  return { isRunning: false, lastUpdate: null };
+}
+
+function displayLogParserWarning() {
+  const status = checkLogParserStatus();
+  
+  if (!status.isRunning) {
+    console.log("\x1b[1m\x1b[31m⚠️  Warning: Log parser may not be running\x1b[0m");
+    if (status.lastUpdate) {
+      console.log(`  Last update: ${formatTimeAgo(status.lastUpdate)}`);
+    } else {
+      console.log("  No usage data found.");
+    }
+    console.log("  Please ensure 'ccr-log-parser' is running to get real-time updates.");
+    console.log();
+  }
 }
 
 let lastData: UsageData[] = [];
+let lastUpdateTime: number = 0;
 
 export async function updateDisplay() {
   try {
     const rawData = getUsageData();
     if (!rawData || rawData.length === 0) {
       // If we get no data, stick with the last known good data
+      clearScreen();
+      displayHeader();
+      console.log("No usage data available yet. Waiting for API calls...");
+      console.log();
+      console.log("Make sure claude-code-router is running and logging is enabled.");
+      console.log("You can enable logging by setting LOG=true in your config.");
+      console.log();
+      displayLogParserWarning();
+      displayFooter();
       return;
     }
     const data = Array.from(new Set(rawData.map(e => JSON.stringify(e)))).map(e => JSON.parse(e));
     
-    // Check if data has changed
-    if (JSON.stringify(data) !== JSON.stringify(lastData)) {
+    // Check if data has changed or if enough time has passed to warrant an update
+    const currentTime = Date.now();
+    const timeSinceLastUpdate = currentTime - lastUpdateTime;
+    
+    if (JSON.stringify(data) !== JSON.stringify(lastData) || timeSinceLastUpdate > 5000) {
       clearScreen();
       displayHeader();
       
@@ -242,8 +312,10 @@ export async function updateDisplay() {
         console.log("You can enable logging by setting LOG=true in your config.");
       }
       
+      displayLogParserWarning();
       displayFooter();
       lastData = data;
+      lastUpdateTime = currentTime;
     }
   } catch (error) {
     console.error("Error updating display:", error);
