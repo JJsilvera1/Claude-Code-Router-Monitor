@@ -4,6 +4,8 @@ export interface UsageData {
   provider: string;
   tokenCount: number;
   cost?: number;
+  inputTokens?: number;
+  outputTokens?: number;
 }
 
 export interface ModelPricing {

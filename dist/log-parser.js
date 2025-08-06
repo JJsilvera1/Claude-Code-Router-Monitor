@@ -81,7 +81,9 @@ function parseLogChunk(logContent) {
                     timestamp,
                     model: lastKnownModel,
                     provider: lastKnownProvider,
-                    tokenCount: (usageObj.prompt_tokens || 0) + (usageObj.completion_tokens || 0)
+                    tokenCount: (usageObj.prompt_tokens || 0) + (usageObj.completion_tokens || 0),
+                    inputTokens: usageObj.prompt_tokens || 0,
+                    outputTokens: usageObj.completion_tokens || 0
                 });
             }
             catch (parseError) {
@@ -197,7 +199,6 @@ function updateUsageData() {
                     existingUsageData.forEach(item => uniqueMap.set(getUniqueKey(item), item));
                     existingUsageData = Array.from(uniqueMap.values());
                     writeUsageData(existingUsageData);
-                    console.log(`Parsed ${newEntries.length} new usage entries. Total: ${existingUsageData.length}`);
                 }
                 lastReadPosition = stats.size;
                 isParsing = false;

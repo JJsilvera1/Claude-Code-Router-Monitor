@@ -4,26 +4,37 @@ exports.updateDisplay = updateDisplay;
 exports.startMonitoring = startMonitoring;
 const log_reader_1 = require("./log-reader");
 const formatter_1 = require("./formatter");
-async function calculateCost(tokenCount, model, provider) {
+async function calculateCost(tokenCount, model, provider, inputTokens, outputTokens) {
     try {
         const config = (0, log_reader_1.readConfigFile)();
         const modelKey = `${provider},${model}`;
         // Check if pricing exists in config
         if (config && config.Pricing && config.Pricing[modelKey]) {
             const pricing = config.Pricing[modelKey];
-            // Assume 50% input tokens, 50% output tokens for cost estimation
-            const inputTokens = Math.floor(tokenCount * 0.5);
-            const outputTokens = tokenCount - inputTokens;
-            const inputCost = (inputTokens / 1000000) * pricing.inputCostPerMToken;
-            const outputCost = (outputTokens / 1000000) * pricing.outputCostPerMToken;
+            // Use actual input/output tokens if available, otherwise estimate
+            const actualInputTokens = inputTokens || 0;
+            const actualOutputTokens = outputTokens || 0;
+            let inputCost, outputCost;
+            if (actualInputTokens > 0 && actualOutputTokens > 0) {
+                // Use actual tokens
+                inputCost = (actualInputTokens / 1000000) * pricing.inputCostPerMToken;
+                outputCost = (actualOutputTokens / 1000000) * pricing.outputCostPerMToken;
+            }
+            else {
+                // Estimate based on typical ratio (60/40 is more realistic than 50/50)
+                const estimatedInputTokens = Math.floor(tokenCount * 0.6);
+                const estimatedOutputTokens = tokenCount - estimatedInputTokens;
+                inputCost = (estimatedInputTokens / 1000000) * pricing.inputCostPerMToken;
+                outputCost = (estimatedOutputTokens / 1000000) * pricing.outputCostPerMToken;
+            }
             return inputCost + outputCost;
         }
     }
     catch (error) {
         console.error("Error reading config for pricing:", error);
     }
-    // Default fallback cost calculation
-    return (tokenCount / 1000000) * 0.01; // $0.01 per million tokens as fallback
+    // Default fallback cost calculation - use more realistic average
+    return (tokenCount / 1000000) * 0.002; // $0.002 per million tokens as fallback
 }
 async function aggregateUsageData(data) {
     const result = {
@@ -33,7 +44,7 @@ async function aggregateUsageData(data) {
         byProvider: {}
     };
     for (const entry of data) {
-        const cost = entry.cost || await calculateCost(entry.tokenCount, entry.model, entry.provider);
+        const cost = entry.cost || await calculateCost(entry.tokenCount, entry.model, entry.provider, entry.inputTokens, entry.outputTokens);
         result.totalTokens += entry.tokenCount;
         result.totalCost += cost;
         // Aggregate by model
@@ -101,7 +112,7 @@ async function displayRecentCalls(data) {
     // Show last 10 calls
     const recentCalls = data.slice(-10).reverse();
     for (const call of recentCalls) {
-        const cost = call.cost || await calculateCost(call.tokenCount, call.model, call.provider);
+        const cost = call.cost || await calculateCost(call.tokenCount, call.model, call.provider, call.inputTokens, call.outputTokens);
         console.log(`  \x1b[2m[${(0, formatter_1.formatTimeAgo)(call.timestamp)}]\x1b[0m` +
             ` \x1b[32m${call.model}\x1b[0m` +
             ` (\x1b[34m${call.provider}\x1b[0m)` +
