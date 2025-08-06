@@ -57,8 +57,7 @@ export function displayHeader() {
 }
 
 export function displayFooter() {
-  console.log(colors.dim + "Press Ctrl+C to exit" + colors.reset);
-  console.log(colors.dim + "Data updates every 10 seconds" + colors.reset);
+  // Empty footer - removed the text messages
 }
 
 export function displayLastApiCall(currentTokens: number, contextWindow: number, modelName: string, providerName: string) {

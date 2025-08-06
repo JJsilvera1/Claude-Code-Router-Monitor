@@ -1,9 +1,46 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateDisplay = updateDisplay;
 exports.startMonitoring = startMonitoring;
 const log_reader_1 = require("./log-reader");
 const formatter_1 = require("./formatter");
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
+const os_1 = __importDefault(require("os"));
+function formatFileSize(bytes) {
+    if (bytes === 0)
+        return '0 B';
+    const gb = bytes / (1024 * 1024 * 1024);
+    const mb = bytes / (1024 * 1024);
+    if (gb >= 1) {
+        return `${gb.toFixed(1)}GB`;
+    }
+    else {
+        return `${mb.toFixed(1)}MB`;
+    }
+}
+function displayLogFileSizeWarning() {
+    try {
+        const homeDir = os_1.default.homedir();
+        const logFile = path_1.default.join(homeDir, '.claude-code-router', 'claude-code-router.log');
+        if (fs_1.default.existsSync(logFile)) {
+            const stats = fs_1.default.statSync(logFile);
+            const fileSize = stats.size;
+            const maxFileSize = 3 * 1024 * 1024 * 1024; // 3GB
+            const warningThreshold = maxFileSize * 0.8; // 80% of 3GB
+            console.log(`\x1b[90mCCR Log File Size: ${formatFileSize(fileSize)}\x1b[0m`);
+            if (fileSize >= warningThreshold) {
+                console.log(`\x1b[33m⚠️  Please wipe CCR Logfile to maintain performance with ccr-monitor --clear\x1b[0m`);
+            }
+        }
+    }
+    catch (error) {
+        // Silently ignore errors for file size monitoring
+    }
+}
 async function calculateCost(tokenCount, model, provider, inputTokens, outputTokens) {
     try {
         const config = (0, log_reader_1.readConfigFile)();
@@ -246,6 +283,7 @@ async function updateDisplay() {
             console.log("You can enable logging by setting LOG=true in your config.");
             console.log();
             displayLogParserWarning();
+            displayLogFileSizeWarning();
             (0, formatter_1.displayFooter)();
             return;
         }
@@ -271,6 +309,7 @@ async function updateDisplay() {
                 console.log("You can enable logging by setting LOG=true in your config.");
             }
             displayLogParserWarning();
+            displayLogFileSizeWarning();
             (0, formatter_1.displayFooter)();
             lastData = data;
             lastUpdateTime = currentTime;

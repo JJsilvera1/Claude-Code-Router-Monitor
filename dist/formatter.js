@@ -63,8 +63,7 @@ function displayHeader() {
     console.log();
 }
 function displayFooter() {
-    console.log(colors.dim + "Press Ctrl+C to exit" + colors.reset);
-    console.log(colors.dim + "Data updates every 10 seconds" + colors.reset);
+    // Empty footer - removed the text messages
 }
 function displayLastApiCall(currentTokens, contextWindow, modelName, providerName) {
     const percentage = (currentTokens / contextWindow) * 100;
