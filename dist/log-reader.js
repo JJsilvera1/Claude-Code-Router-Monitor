@@ -9,6 +9,7 @@ exports.readConfigFile = readConfigFile;
 const node_fs_1 = __importDefault(require("node:fs"));
 const node_path_1 = __importDefault(require("node:path"));
 const node_os_1 = __importDefault(require("node:os"));
+const types_1 = require("./types");
 const HOME_DIR = node_path_1.default.join(node_os_1.default.homedir(), ".claude-code-router");
 exports.USAGE_DATA_FILE = node_path_1.default.join(HOME_DIR, "claude-code-router-usage-data.json");
 exports.CONFIG_FILE = node_path_1.default.join(HOME_DIR, "monitor-config.json");
@@ -21,10 +22,16 @@ function getUsageData() {
                 return [];
             }
             try {
-                return JSON.parse(fileContent);
+                const data = JSON.parse(fileContent);
+                // Validate that the data is an array
+                if (!Array.isArray(data)) {
+                    console.warn("Usage data file contains invalid format, returning empty array");
+                    return [];
+                }
+                return data;
             }
             catch (parseError) {
-                // console.error("Failed to parse usage data, file may be corrupt or being written.", parseError);
+                console.warn("Failed to parse usage data, file may be corrupt or being written. Returning empty array.");
                 return [];
             }
         }
@@ -37,12 +44,26 @@ function getUsageData() {
 function readConfigFile() {
     try {
         if (node_fs_1.default.existsSync(exports.CONFIG_FILE)) {
-            const config = node_fs_1.default.readFileSync(exports.CONFIG_FILE, "utf8");
-            return JSON.parse(config);
+            const configContent = node_fs_1.default.readFileSync(exports.CONFIG_FILE, "utf8");
+            if (configContent.trim() === "") {
+                console.warn("Config file is empty");
+                return null;
+            }
+            try {
+                return JSON.parse(configContent);
+            }
+            catch (parseError) {
+                throw new types_1.ConfigError(`Invalid JSON in config file: ${exports.CONFIG_FILE}`, parseError);
+            }
         }
     }
     catch (error) {
-        console.error("Failed to read config file:", error);
+        if (error instanceof types_1.ConfigError) {
+            console.error(error.message);
+        }
+        else {
+            console.error("Failed to read config file:", error);
+        }
     }
     return null;
 }

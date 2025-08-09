@@ -1,5 +1,5 @@
 import { getUsageData, readConfigFile } from "./log-reader";
-import { UsageData, ModelPricing } from "./types";
+import { UsageData, AggregatedUsage } from "./types";
 import { 
   clearScreen, 
   formatTokenCount, 
@@ -12,7 +12,6 @@ import {
 import fs from "fs";
 import path from "path";
 import os from "os";
-import { spawn } from "child_process";
 
 function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 B';
@@ -87,12 +86,7 @@ async function calculateCost(tokenCount: number, model: string, provider: string
   return (tokenCount / 1000000) * 0.002; // $0.002 per million tokens as fallback
 }
 
-async function aggregateUsageData(data: UsageData[]): Promise<{
-  totalTokens: number;
-  totalCost: number;
-  byModel: Record<string, { tokens: number; cost: number; count: number }>;
-  byProvider: Record<string, { tokens: number; cost: number }>;
-}> {
+async function aggregateUsageData(data: UsageData[]): Promise<AggregatedUsage> {
   const result = {
     totalTokens: 0,
     totalCost: 0,
@@ -125,7 +119,7 @@ async function aggregateUsageData(data: UsageData[]): Promise<{
   return result;
 }
 
-function displaySummary(data: UsageData[], aggregated: any) {
+function displaySummary(data: UsageData[], aggregated: AggregatedUsage) {
   console.log("\x1b[1mSummary:\x1b[0m");
   console.log(`  Total API Calls: \x1b[33m${data.length.toString()}\x1b[0m`);
   console.log(`  Total Tokens: \x1b[33m${formatTokenCount(aggregated.totalTokens)}\x1b[0m`);
@@ -133,7 +127,7 @@ function displaySummary(data: UsageData[], aggregated: any) {
   console.log();
 }
 
-function displayByModel(aggregated: any) {
+function displayByModel(aggregated: AggregatedUsage) {
   console.log("\x1b[1mUsage by Model:\x1b[0m");
   const models = Object.entries(aggregated.byModel);
   
@@ -154,7 +148,7 @@ function displayByModel(aggregated: any) {
   console.log();
 }
 
-function displayByProvider(aggregated: any) {
+function displayByProvider(aggregated: AggregatedUsage) {
   console.log("\x1b[1mUsage by Provider:\x1b[0m");
   const providers = Object.entries(aggregated.byProvider);
   

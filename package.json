@@ -1,18 +1,21 @@
 {
   "name": "ccr-monitor",
   "version": "1.0.0",
-  "description": "Standalone terminal-based monitoring tool for Claude Code Router",
+  "description": "Standalone terminal-based monitoring tool for Claude Code Router and OpenRouter",
   "main": "dist/index.js",
   "bin": {
     "ccr-monitor": "dist/index.js",
     "ccr-log-parser": "dist/log-parser.js",
-    "ccr-start": "dist/starter.js"
+    "ccr-start": "dist/starter.js",
+    "ccr-openrouter-monitor": "dist/openrouter-cli.js",
+    "ccr-openrouter-setup": "dist/openrouter-setup.js"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
     "dev": "ts-node src/index.ts",
-    "parse-logs": "ts-node src/log-parser.ts"
+    "clean": "rm -rf dist",
+    "prestart": "npm run build"
   },
   "keywords": [
     "claude",
@@ -21,10 +24,20 @@
     "monitor",
     "llm",
     "usage",
-    "tracking"
+    "tracking",
+    "openrouter",
+    "api",
+    "credits",
+    "token",
+    "typescript",
+    "terminal",
+    "cli"
   ],
   "author": "Your Name",
   "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "dependencies": {
     "typescript": "^5.8.2"
   },

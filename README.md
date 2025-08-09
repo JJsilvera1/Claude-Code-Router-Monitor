@@ -1,14 +1,33 @@
-# Claude Code Router Monitor
+# Claude Code Router & OpenRouter Monitor
 
-A standalone terminal-based monitoring tool for tracking Claude Code Router usage, including API calls, context window sizes, and cost estimates.
+A standalone terminal-based monitoring tool for tracking Claude Code Router usage, OpenRouter API usage, credits, and cost estimates.
+
+## Recent Updates
+
+### v1.2.0 - Token Usage Parsing Improvements
+- **Fixed log parsing**: Updated regex pattern to correctly match `usage {"prompt_tokens":...}` format from Claude Code Router logs
+- **Enhanced filtering**: Now properly filters out invalid token data (0, 1, or null values) to show only meaningful usage
+- **Improved error handling**: Better error handling with custom error classes (`MonitorError`, `ConfigError`, `LogParseError`)
+- **Type safety**: Complete TypeScript refactoring with centralized type definitions
+- **Code quality**: Removed duplicate interfaces, improved separation of concerns, cleaner project structure
 
 ## Features
 
+### Claude Code Router Monitoring
 - **Real-time Monitoring**: Live dashboard updating every 10 seconds
 - **Usage Statistics**: Track API calls, token counts, and costs
 - **Model & Provider Breakdown**: See usage by model and provider
 - **Context Window Visualization**: Visualize token usage against model context windows
 - **Cost Estimation**: Calculate costs based on configured pricing
+
+### OpenRouter Monitoring
+- **Credit Tracking**: Monitor usage and remaining credits across all API keys
+- **Key Management**: Track individual API key usage and limits
+- **Real-time Updates**: Live credit balance monitoring
+- **Usage Alerts**: Get notified when credits are low or usage is high
+- **Historical Data**: Track usage patterns over time
+
+### Common Features
 - **Terminal Interface**: Color-coded, easy-to-read terminal dashboard
 
 ## Quick Installation
@@ -83,9 +102,57 @@ ccr-monitor --clear
 
 ## Commands Summary
 
+### Claude Code Router Commands
 - `ccr-log-parser`: Parses logs and generates usage data
 - `ccr-monitor`: Displays the real-time dashboard
 - `ccr-start`: Starts both services together
+
+### OpenRouter Commands
+- `ccr-openrouter-setup`: Setup OpenRouter monitoring configuration
+- `ccr-openrouter-monitor`: Start OpenRouter monitoring dashboard
+
+## OpenRouter Monitoring Setup
+
+### Prerequisites
+
+1. **Create a Provisioning API Key** (not a regular API key):
+   - Go to: https://openrouter.ai/settings/provisioning-keys
+   - Click "Create New Key"
+   - Complete the key creation process
+
+2. **Setup Configuration**:
+   ```bash
+   ccr-openrouter-setup
+   ```
+   - Enter your Provisioning API Key when prompted
+   - This creates a config file at `~/.claude-code-router/openrouter-config.json`
+
+### Usage
+
+```bash
+# Setup OpenRouter monitoring (one-time)
+ccr-openrouter-setup
+
+# Start OpenRouter monitoring dashboard
+ccr-openrouter-monitor
+
+# Clear usage data
+ccr-openrouter-monitor --clear
+```
+
+### What OpenRouter Monitoring Tracks
+
+- **Total Credits**: Usage and limits across all API keys
+- **Individual Key Usage**: Track usage per API key
+- **Credit Remaining**: Real-time credit balance
+- **Usage Alerts**: Notifications for high usage or low credits
+- **Usage History**: Historical data and trends
+
+### Security Notes
+
+- **Provisioning API Keys** are used ONLY for monitoring - they cannot make API calls
+- The tool reads usage data, it does not modify your API keys
+- All data is stored locally on your machine
 
 ## Using in Different VS Code Workspaces
 

@@ -5,8 +5,16 @@
       "Bash(npm run build:*)",
       "Bash(ls:*)",
       "Bash(cat:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(grep -n \"usage\" ~/.claude-code-router/claude-code-router.log)",
+      "Bash(git checkout src/log-reader.ts)",
+      "Bash(rm -f src/csv-parser.ts)"
     ],
     "deny": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "claude-context",
+    "openai-web-search"
+  ]
 }

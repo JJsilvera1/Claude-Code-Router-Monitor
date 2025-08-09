@@ -63,7 +63,8 @@ function extractModelFromJSON(jsonStr) {
 function parseLogChunk(logContent) {
     const newUsageData = [];
     const lines = logContent.split("\n");
-    const usageRegex = /usage\s*(\{.*?\})\s*(true|false)/;
+    // Updated regex to match the actual log format: usage {"prompt_tokens":...}
+    const usageRegex = /usage\s+(\{[^}]*\})/;
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const modelInfo = extractModelFromLine(line, lines, i);
@@ -77,17 +78,24 @@ function parseLogChunk(logContent) {
                 const usageObj = JSON.parse(match[1]);
                 const timestampMatch = line.match(/\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\]/);
                 const timestamp = timestampMatch ? timestampMatch[1] : new Date().toISOString();
-                newUsageData.push({
-                    timestamp,
-                    model: lastKnownModel,
-                    provider: lastKnownProvider,
-                    tokenCount: (usageObj.prompt_tokens || 0) + (usageObj.completion_tokens || 0),
-                    inputTokens: usageObj.prompt_tokens || 0,
-                    outputTokens: usageObj.completion_tokens || 0
-                });
+                // Extract token counts
+                const promptTokens = usageObj.input_tokens || usageObj.prompt_tokens || 0;
+                const completionTokens = usageObj.output_tokens || usageObj.completion_tokens || 0;
+                const totalTokens = usageObj.total_tokens || (promptTokens + completionTokens);
+                // Filter out invalid data (0, 1, or null values)
+                if (promptTokens > 1 && completionTokens > 1 && totalTokens > 1) {
+                    newUsageData.push({
+                        timestamp,
+                        model: lastKnownModel,
+                        provider: lastKnownProvider,
+                        tokenCount: totalTokens,
+                        inputTokens: promptTokens,
+                        outputTokens: completionTokens
+                    });
+                }
             }
             catch (parseError) {
-                // console.error("Error parsing usage object:", parseError);
+                console.error("Error parsing usage object:", parseError, "Raw match:", match[1]);
             }
         }
     }

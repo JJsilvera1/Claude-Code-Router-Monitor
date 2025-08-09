@@ -2,21 +2,12 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import { UsageData } from "./types";
 
 const HOME_DIR = path.join(os.homedir(), ".claude-code-router");
 const LOG_FILE = path.join(HOME_DIR, "claude-code-router.log");
 const USAGE_DATA_FILE = path.join(HOME_DIR, "claude-code-router-usage-data.json");
 const USAGE_DATA_TMP_FILE = path.join(HOME_DIR, "claude-code-router-usage-data.json.tmp");
-
-interface UsageData {
-  timestamp: string;
-  model: string;
-  provider: string;
-  tokenCount: number;
-  cost?: number;
-  inputTokens?: number;
-  outputTokens?: number;
-}
 
 // --- State Variables ---
 let lastReadPosition = 0;
@@ -68,7 +59,8 @@ function extractModelFromJSON(jsonStr: string): { model: string, provider: strin
 function parseLogChunk(logContent: string): UsageData[] {
     const newUsageData: UsageData[] = [];
     const lines = logContent.split("\n");
-    const usageRegex = /usage\s*(\{.*?\})\s*(true|false)/;
+    // Updated regex to match the actual log format: usage {"prompt_tokens":...}
+    const usageRegex = /usage\s+(\{[^}]*\})/;
 
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
@@ -86,16 +78,24 @@ function parseLogChunk(logContent: string): UsageData[] {
                 const timestampMatch = line.match(/\[(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z)\]/);
                 const timestamp = timestampMatch ? timestampMatch[1] : new Date().toISOString();
 
-                newUsageData.push({
-                    timestamp,
-                    model: lastKnownModel,
-                    provider: lastKnownProvider,
-                    tokenCount: (usageObj.prompt_tokens || 0) + (usageObj.completion_tokens || 0),
-                    inputTokens: usageObj.prompt_tokens || 0,
-                    outputTokens: usageObj.completion_tokens || 0
-                });
+                // Extract token counts
+                const promptTokens = usageObj.input_tokens || usageObj.prompt_tokens || 0;
+                const completionTokens = usageObj.output_tokens || usageObj.completion_tokens || 0;
+                const totalTokens = usageObj.total_tokens || (promptTokens + completionTokens);
+
+                // Filter out invalid data (0, 1, or null values)
+                if (promptTokens > 1 && completionTokens > 1 && totalTokens > 1) {
+                    newUsageData.push({
+                        timestamp,
+                        model: lastKnownModel,
+                        provider: lastKnownProvider,
+                        tokenCount: totalTokens,
+                        inputTokens: promptTokens,
+                        outputTokens: completionTokens
+                    });
+                }
             } catch (parseError) {
-                // console.error("Error parsing usage object:", parseError);
+                console.error("Error parsing usage object:", parseError, "Raw match:", match[1]);
             }
         }
     }

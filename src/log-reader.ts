@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { UsageData } from "./types";
+import { UsageData, MonitorConfig, ConfigError } from "./types";
 
 const HOME_DIR = path.join(os.homedir(), ".claude-code-router");
 export const USAGE_DATA_FILE = path.join(HOME_DIR, "claude-code-router-usage-data.json");
@@ -16,9 +16,15 @@ export function getUsageData(): UsageData[] {
         return [];
       }
       try {
-        return JSON.parse(fileContent);
+        const data = JSON.parse(fileContent);
+        // Validate that the data is an array
+        if (!Array.isArray(data)) {
+          console.warn("Usage data file contains invalid format, returning empty array");
+          return [];
+        }
+        return data as UsageData[];
       } catch (parseError) {
-        // console.error("Failed to parse usage data, file may be corrupt or being written.", parseError);
+        console.warn("Failed to parse usage data, file may be corrupt or being written. Returning empty array.");
         return [];
       }
     }
@@ -28,14 +34,26 @@ export function getUsageData(): UsageData[] {
   return [];
 }
 
-export function readConfigFile(): any {
+export function readConfigFile(): MonitorConfig | null {
   try {
     if (fs.existsSync(CONFIG_FILE)) {
-      const config = fs.readFileSync(CONFIG_FILE, "utf8");
-      return JSON.parse(config);
+      const configContent = fs.readFileSync(CONFIG_FILE, "utf8");
+      if (configContent.trim() === "") {
+        console.warn("Config file is empty");
+        return null;
+      }
+      try {
+        return JSON.parse(configContent) as MonitorConfig;
+      } catch (parseError) {
+        throw new ConfigError(`Invalid JSON in config file: ${CONFIG_FILE}`, parseError as Error);
+      }
     }
   } catch (error) {
-    console.error("Failed to read config file:", error);
+    if (error instanceof ConfigError) {
+      console.error(error.message);
+    } else {
+      console.error("Failed to read config file:", error);
+    }
   }
   return null;
 }
